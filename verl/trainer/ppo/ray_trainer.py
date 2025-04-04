@@ -93,6 +93,8 @@ def apply_kl_penalty(data: DataProto, kl_ctrl: core_algos.AdaptiveKLController, 
     response_length = responses.size(1)
     token_level_scores = data.batch['token_level_scores']
     batch_size = data.batch.batch_size[0]
+    
+    # 使用info_mask来计算kl penalty
     attention_mask = data.batch['info_mask']
     response_mask = attention_mask[:, -response_length:]
 
@@ -755,7 +757,7 @@ class RayPPOTrainer(object):
 
                         # we combine with rule-based rm
                         print(f"DEBUG: batch before reward_fn: {batch}")
-                        reward_tensor = self.reward_fn(batch)
+                        reward_tensor = self.reward_fn(batch)   # 对每个token的reward
                         batch.batch['token_level_scores'] = reward_tensor
                         
                         reward_stats = {
@@ -767,6 +769,7 @@ class RayPPOTrainer(object):
                         metrics.update(reward_stats)
 
                         # compute rewards. apply_kl_penalty if available
+                        # 如果不使用use_kl_loss， 则把kl_loss惩罚到每个token上
                         if not self.config.actor_rollout_ref.actor.use_kl_loss:
                             batch, kl_metrics = apply_kl_penalty(batch,
                                                                  kl_ctrl=self.kl_ctrl,

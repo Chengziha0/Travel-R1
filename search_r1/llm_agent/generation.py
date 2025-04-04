@@ -43,11 +43,6 @@ class LLMGenerationManager:
         ))
         
         # Initialize tool and memory instances
-        # # Handwritten
-        # memory_module = importlib.import_module('search_r1.tool.api.memory')
-        # tool_module = importlib.import_module('search_r1.tool.api.tool')
-        
-        # Travel_planner
         tool_module = importlib.import_module('search_r1.tool.tools.tool')
         memory_module = importlib.import_module('search_r1.tool.tools.memory')
         self.memory = memory_module.Memory()
@@ -66,7 +61,7 @@ class LLMGenerationManager:
         """Process responses, extracting the part containing tool, memory, or answer tags"""
         responses_str = self.tokenizer.batch_decode(responses, skip_special_tokens=True)    # [bsz, response_length]
         for i, resp in enumerate(responses_str):
-            for tag in ['answer', 'memory', 'tool']:
+            for tag in ['answer', 'think', 'memory', 'tool']:
                 end_tag = f'</{tag}>'
                 if end_tag in resp:
                     end_pos = resp.find(end_tag) + len(end_tag) # Find the position of the first end_tag
@@ -304,7 +299,7 @@ class LLMGenerationManager:
         """Extract actions and contents from predictions"""
         actions, contents = [], []
         for prediction in predictions:
-            pattern = r'<(tool|memory|answer)>(.*?)</\1>'
+            pattern = r'<(tool|memory|answer|think)>(.*?)</\1>'
             match = re.search(pattern, prediction, re.DOTALL)
             if match:
                 actions.append(match.group(1))
@@ -349,6 +344,11 @@ class LLMGenerationManager:
                 next_obs.append('')
                 print("DEBUG:  execute_predictions: 回答完成")
                 dones.append(True)
+            elif action == 'think' and not final_step:
+                # 思考不需要产生观察结果，只是模型自己的内部思考过程
+                next_obs.append('')  # 没有观察结果
+                print("DEBUG:  execute_predictions: 模型思考中")
+                dones.append(False)  # 对话继续
             elif action is None:
                 next_obs.append('')
                 print("DEBUG:  execute_predictions: 无动作")
@@ -481,7 +481,7 @@ class LLMGenerationManager:
             return None
         return value_str
 
-    def _compose_final_output(self, left_side: Dict, right_side: Dict, meta_info: Dict) -> Tuple[DataProto, Dict]:
+    def _compose_final_output(self, left_side: Dict, right_side: Dict, meta_info: Dict) -> DataProto:
         final_output = right_side.copy()
         final_output['prompts'] = left_side['input_ids']
         final_output['input_ids'] = torch.cat([left_side['input_ids'], right_side['responses']], dim=1)
