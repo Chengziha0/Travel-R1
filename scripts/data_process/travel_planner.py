@@ -137,9 +137,6 @@ if __name__ == '__main__':
 
     data_source = 'TravelPlanner'
 
-    
-    # dataset = datasets.load_dataset(args.local_dir, 'train')
-    # print(dataset.keys())
     train_dataset = datasets.load_dataset(args.local_dir, 'train')['train']
     test_dataset = datasets.load_dataset(args.local_dir, 'test')['test']
 

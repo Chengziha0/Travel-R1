@@ -3,8 +3,8 @@ export DATA_DIR='/mnt/data/liuzeming_teacher/czh/Travel-R1/data/TravelPlanner/'
 
 WAND_PROJECT='Travel-R1'
 
-export BASE_MODEL='/mnt/data/liuzeming_teacher/LLMs/Qwen2.5-3B-Instruct'
-export EXPERIMENT_NAME=travel-r1-qwen2.5-3b-it
+export BASE_MODEL='/mnt/data/liuzeming_teacher/LLMs/Qwen2.5-0.5B-Instruct'
+export EXPERIMENT_NAME=travel-r1-qwen2.5-0.5b-it-ppo
 # export BASE_MODEL='meta-llama/Llama-3.2-3B-Instruct'
 # export EXPERIMENT_NAME=nq-search-r1-ppo-llama3.2-3b-it-em
 # export BASE_MODEL='meta-llama/Llama-3.1-8B'
@@ -34,9 +34,9 @@ PYTHONUNBUFFERED=1 python3 -m verl.trainer.main_ppo \
     data.train_batch_size=512 \
     data.val_batch_size=256 \
     data.max_prompt_length=4096 \
-    data.max_response_length=500 \
-    data.max_start_length=2048 \
-    data.max_obs_length=5000 \
+    data.max_response_length=5000 \
+    data.max_start_length=4096 \
+    data.max_obs_length=50000 \
     data.shuffle_train_dataloader=True \
     algorithm.adv_estimator=gae \
     actor_rollout_ref.model.path=$BASE_MODEL \

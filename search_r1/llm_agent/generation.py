@@ -66,7 +66,7 @@ class LLMGenerationManager:
         """Process responses, extracting the part containing tool, memory, or answer tags"""
         responses_str = self.tokenizer.batch_decode(responses, skip_special_tokens=True)    # [bsz, response_length]
         for i, resp in enumerate(responses_str):
-            for tag in ['tool', 'memory', 'answer']:
+            for tag in ['answer', 'memory', 'tool']:
                 end_tag = f'</{tag}>'
                 if end_tag in resp:
                     end_pos = resp.find(end_tag) + len(end_tag) # Find the position of the first end_tag
@@ -205,7 +205,7 @@ class LLMGenerationManager:
         valid_action_stats = torch.zeros(gen_batch.batch['input_ids'].shape[0], dtype=torch.int)  # Total valid action count
         tool_action_stats = torch.zeros(gen_batch.batch['input_ids'].shape[0], dtype=torch.int)   # <tool> valid count
         memory_action_stats = torch.zeros(gen_batch.batch['input_ids'].shape[0], dtype=torch.int) # <memory> valid count
-        answer_action_stats = torch.zeros(gen_batch.batch['input_ids'].shape[0], dtype=torch.int) # <answer> valid count
+        # answer_action_stats = torch.zeros(gen_batch.batch['input_ids'].shape[0], dtype=torch.int) # <answer> valid count
         
         rollings = gen_batch
 
@@ -234,23 +234,23 @@ class LLMGenerationManager:
             # Count valid actions and categorize by type
             cur_actions, contents = self.postprocess_predictions(responses_str)
             for i, (action, content) in enumerate(zip(cur_actions, contents)):
-                if active_mask[i] and action in ['tool', 'memory', 'answer']:
+                if active_mask[i] and action in ['tool', 'memory']:
                     if action == 'tool' and "Error" not in next_obs[i]:  # Tool call successful
                         valid_action_stats[i] += 1
                         tool_action_stats[i] += 1
                     elif action == 'memory' and "Error" not in next_obs[i]:  # Memory operation successful
                         valid_action_stats[i] += 1
                         memory_action_stats[i] += 1
-                    elif action == 'answer':  # Answer action is always valid
-                        valid_action_stats[i] += 1
-                        answer_action_stats[i] += 1
+                    # elif action == 'answer':  # Answer action is always valid
+                    #     valid_action_stats[i] += 1
+                    #     answer_action_stats[i] += 1
 
             curr_active_mask = torch.tensor([not done for done in dones], dtype=torch.bool)
             active_mask = active_mask * curr_active_mask
             active_num_list.append(active_mask.sum().item())
             next_obs_ids = self._process_next_obs(next_obs)
             rollings = self._update_rolling_state(rollings, responses_ids, next_obs_ids)
-            breakpoint()
+            # breakpoint()
             original_right_side = self._update_right_side(original_right_side, responses_ids, next_obs_ids)
         
         # If there are still conversations not ended after max_turns, force end them
@@ -272,16 +272,16 @@ class LLMGenerationManager:
             # Count valid actions for the last step and categorize by type
             cur_actions, contents = self.postprocess_predictions(responses_str)
             for i, (action, content) in enumerate(zip(cur_actions, contents)):
-                if active_mask[i] and action in ['tool', 'memory', 'answer']:
+                if active_mask[i] and action in ['tool', 'memory']:
                     if action == 'tool' and "My previous action is invalid. Let me try again." not in next_obs[i]:
                         valid_action_stats[i] += 1
                         tool_action_stats[i] += 1
                     elif action == 'memory' and "My previous action is invalid. Let me try again." not in next_obs[i]:
                         valid_action_stats[i] += 1
                         memory_action_stats[i] += 1
-                    elif action == 'answer':
-                        valid_action_stats[i] += 1
-                        answer_action_stats[i] += 1
+                    # elif action == 'answer':
+                    #     valid_action_stats[i] += 1
+                    #     answer_action_stats[i] += 1
 
             curr_active_mask = torch.tensor([not done for done in dones], dtype=torch.bool)
             active_mask = active_mask * curr_active_mask
@@ -294,7 +294,7 @@ class LLMGenerationManager:
         meta_info['valid_action_stats'] = valid_action_stats.tolist()      # Keep existing field
         meta_info['tool_action_stats'] = tool_action_stats.tolist()        # New field for tool stats
         meta_info['memory_action_stats'] = memory_action_stats.tolist()    # New field for memory stats
-        meta_info['answer_action_stats'] = answer_action_stats.tolist()    # New field for answer stats
+        # meta_info['answer_action_stats'] = answer_action_stats.tolist()    # New field for answer stats
         meta_info['turns_stats'] = active_num_list
         meta_info['active_mask'] = active_mask.tolist()
         

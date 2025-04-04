@@ -757,6 +757,14 @@ class RayPPOTrainer(object):
                         print(f"DEBUG: batch before reward_fn: {batch}")
                         reward_tensor = self.reward_fn(batch)
                         batch.batch['token_level_scores'] = reward_tensor
+                        
+                        reward_stats = {
+                            'reward/mean': reward_tensor.mean().item(),
+                            'reward/max': reward_tensor.max().item(),
+                            'reward/min': reward_tensor.min().item(),
+                            'reward/std': reward_tensor.std().item()
+                        }
+                        metrics.update(reward_stats)
 
                         # compute rewards. apply_kl_penalty if available
                         if not self.config.actor_rollout_ref.actor.use_kl_loss:
