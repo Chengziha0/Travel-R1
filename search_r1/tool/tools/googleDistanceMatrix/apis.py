@@ -14,7 +14,6 @@ class GoogleDistanceMatrix:
     def __init__(self, subscription_key: str="") -> None:
         self.gplaces_api_key: str = subscription_key
         self.data =  pd.read_csv('search_r1/tool/database/googleDistanceMatrix/distance.csv')
-        print("GoogleDistanceMatrix loaded.")
 
     def run(self, origin, destination, mode='driving'):
         origin = extract_before_parenthesis(origin)

@@ -4,7 +4,6 @@ class Cities:
     def __init__(self ,path="search_r1/tool/database/background/citySet_with_states.txt") -> None:
         self.path = path
         self.load_data()
-        print("Cities loaded.")
 
     def load_data(self):
         cityStateMapping = open(self.path, "r").read().strip().split("\n")

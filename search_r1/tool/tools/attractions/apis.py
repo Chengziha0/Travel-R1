@@ -8,7 +8,6 @@ class Attractions:
     def __init__(self, path="search_r1/tool/database/attractions/attractions.csv"):
         self.path = path
         self.data = pd.read_csv(self.path).dropna()[['Name','Latitude','Longitude','Address','Phone','Website',"City"]]
-        print("Attractions loaded.")
 
     def load_db(self):
         self.data = pd.read_csv(self.path)

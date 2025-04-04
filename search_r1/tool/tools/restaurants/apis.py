@@ -7,7 +7,6 @@ class Restaurants:
     def __init__(self, path="search_r1/tool/database/restaurants/clean_restaurant_2022.csv"):
         self.path = path
         self.data = pd.read_csv(self.path).dropna()[['Name','Average Cost','Cuisines','Aggregate Rating','City']]
-        print("Restaurants loaded.")
 
     def load_db(self):
         self.data = pd.read_csv(self.path).dropna()

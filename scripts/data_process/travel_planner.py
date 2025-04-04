@@ -31,21 +31,15 @@ def make_prefix(dp, template_type):
         """This works for any base model"""
         prefix = f"""Plan travel itineraries based on user requests. You must use deep reasoning to create the final plan and show your thinking process between <think> and </think> tags.
 
-When you need travel information you don't have, use tools to search for it. Write tool calls like this:\
-<tool>function_name(parameter1=value1, parameter2=value2)</tool>
+When you need travel information you don't have, use tools to search for it. Write tool calls like this:
+<tool>function_name(parameter1=value1, parameter2=value2)</tool>, and the result will be shown in <tool_result>...</tool_result> tags. 
 
 You can use memory operations at any time. Write them like this:
-<memory>function_name(parameter1=value1, parameter2=value2)</memory>
+<memory>function_name(parameter1=value1, parameter2=value2)</memory>, and the result will be shown in <memory_result>...</memory_result> tags.
+
+If you use tool or memory operations incorrectly, error messages will be returned in <error>...</error> tags.
 
 If you have enough information to make the travel plan, give the answer in JSON format between <answer> and </answer> without extra explanation.
-
-Example workflow:
-1. User asks for a trip plan
-2. You think about what's needed (<think>...</think>)
-    a. In thinking process, check memory if needed (<memory>read(...)</memory>)
-    b. In thinking process, search for missing info using tools (<tool>search_flights(...)</tool>)
-    ...
-3. Create and return the final plan (<answer>{{...}}</answer>)
 
 Here are the tools you can use:
 

@@ -7,7 +7,6 @@ from typing import List, Dict, Tuple
 from .tensor_helper import TensorHelper, TensorConfig
 from verl import DataProto
 from verl.utils.tracking import Tracking
-# generation update
 
 @dataclass
 class GenerationConfig:
@@ -53,8 +52,6 @@ class LLMGenerationManager:
         memory_module = importlib.import_module('search_r1.tool.tools.memory')
         self.memory = memory_module.Memory()
         self.tool = tool_module.Tool()
-        print("DEBUG:  __init__: 记忆模块已初始化！")
-        print("DEBUG:  __init__: 工具模块已初始化！")
 
     def _batch_tokenize(self, responses: List[str]) -> torch.Tensor:
         """Tokenize a batch of responses"""
@@ -75,7 +72,6 @@ class LLMGenerationManager:
                     end_pos = resp.find(end_tag) + len(end_tag) # Find the position of the first end_tag
                     responses_str[i] = resp[:end_pos]   # Keep only the part before the first end_tag
                     break 
-        print(f"DEBUG:  _postprocess_responses: responses_str: {responses_str}")
         if self.config.no_think_rl:
             raise ValueError('no_think_rl not supported in this implementation')
         responses_ids = self._batch_tokenize(responses_str)
@@ -90,7 +86,7 @@ class LLMGenerationManager:
             add_special_tokens=False
         )['input_ids']
         if next_obs_ids.shape[1] > self.config.max_obs_length:
-            print("DEBUG:  _process_next_obs: [警告] 观察结果太长，请考虑修改配置")
+            print("DEBUG: [警告] 观察结果太长，请考虑修改配置")
             next_obs_ids = next_obs_ids[:, :self.config.max_obs_length]
         return next_obs_ids
 
@@ -518,30 +514,65 @@ class LLMGenerationManager:
         return ""
 
     def _info_masked_concatenate_with_padding(self, 
-            prompt: torch.Tensor,   # right_side['responses']
-            prompt_with_mask: torch.Tensor, # right_side['responses_with_info_mask']
-            response: torch.Tensor,     # cur_response
-            info: torch.Tensor = None,  # next_obs_ids
-            pad_to_left: bool = True
-        ) -> torch.Tensor:
-        """Concatenate tensors and handle padding. If info block exists, create a mask (info_mask) to cover it."""
-        pad_id = self.tokenizer.pad_token_id
-        tensors = [prompt, response]
-        tensors_with_mask = [prompt_with_mask, response]
+        response_history: torch.Tensor,          # 原 prompt
+        response_history_with_info: torch.Tensor,# 原 prompt_with_mask 
+        new_response: torch.Tensor,              # 原 response
+        next_obs_ids: torch.Tensor = None,       # 原 info，保持与调用处一致
+        pad_to_left: bool = True                 # 保持原命名
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        连接对话响应历史、新响应和观察结果,并维护相应的信息掩码。
         
-        if info is not None:
-            tensors.append(info)
-            # Create a mask filled with pad_id to mark tool and memory results
-            info_mask = torch.full(info.size(), pad_id, dtype=info.dtype, device=info.device)
-            tensors_with_mask.append(info_mask)
+        在LLM对话循环中使用,主要用于:
+        1. 在right_side中追加新的响应和观察结果
+        2. 为工具调用(tool)和记忆操作(memory)的结果创建信息掩码
+        3. 处理张量的填充对齐
         
-        concatenated = torch.cat(tensors, dim=1)
-        concatenated_with_info = torch.cat(tensors_with_mask, dim=1)
+        Args:
+            response_history: 之前累积的响应历史
+            response_history_with_info: 带有信息掩码的响应历史
+            new_response: 当前轮次的新响应
+            next_obs_ids: 下一个观察结果的token ids
+            pad_to_left: 是否将padding对齐到左侧(默认为True)
         
-        mask = concatenated != pad_id if pad_to_left else concatenated == pad_id
-        sorted_indices = mask.to(torch.int64).argsort(dim=1, stable=True)
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor]: 
+                - responses: 排序后的完整响应序列
+                - responses_with_info_mask: 排序后的信息掩码序列
+                这两个返回值会被用于更新right_side状态
+        """
+        pad_token_id = self.tokenizer.pad_token_id
         
-        padded_tensor = concatenated.gather(1, sorted_indices)
-        padded_tensor_with_info = concatenated_with_info.gather(1, sorted_indices)
+        # 构建响应序列
+        response_sequence = [response_history, new_response]
+        response_sequence_with_info = [response_history_with_info, new_response]
+        
+        # 如果有观察结果,添加到序列
+        if next_obs_ids is not None:
+            response_sequence.append(next_obs_ids)
+            # 使用pad_token_id标记观察结果区域
+            obs_info_mask = torch.full(
+                next_obs_ids.size(), 
+                pad_token_id,
+                dtype=next_obs_ids.dtype,
+                device=next_obs_ids.device
+            )
+            response_sequence_with_info.append(obs_info_mask)
+        
+        # 连接所有序列
+        concatenated_responses = torch.cat(response_sequence, dim=1)
+        concatenated_info_masks = torch.cat(response_sequence_with_info, dim=1)
+        
+        # 创建排序掩码用于对齐padding
+        padding_mask = (
+            concatenated_responses != pad_token_id 
+            if pad_to_left 
+            else concatenated_responses == pad_token_id
+        )
+        sort_indices = padding_mask.to(torch.int64).argsort(dim=1, stable=True)
+        
+        # 根据排序索引重排序列
+        sorted_responses = concatenated_responses.gather(1, sort_indices)
+        sorted_info_masks = concatenated_info_masks.gather(1, sort_indices)
 
-        return padded_tensor, padded_tensor_with_info
+        return sorted_responses, sorted_info_masks
