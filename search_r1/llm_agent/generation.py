@@ -7,7 +7,7 @@ from typing import List, Dict, Tuple
 from .tensor_helper import TensorHelper, TensorConfig
 from verl import DataProto
 from verl.utils.tracking import Tracking
-
+# generation
 @dataclass
 class GenerationConfig:
     max_turns: int
