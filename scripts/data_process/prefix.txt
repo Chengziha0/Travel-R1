@@ -30,23 +30,87 @@ Your Turn 8: <answer>{ "city": "London", "duration": "3 days", "flights": [...],
 
 Error Handling: If you use tool or memory operations incorrectly, error messages will be returned in <error>...</error> tags in the following turn. Use this feedback to correct your next action.
 
+Guideline for Search Queries: When constructing parameters for tool calls that involve searching or identifying locations/entities (e.g., `search_flights`, `search_attractions`, `search_restaurants`, `search_accommodations`, `search_cities`, `calculate_distance`), you **MUST prioritize reusing relevant keywords, names, and terms exactly as they appear in the original `User instruction`**. This helps ensure the search is aligned with the user's specific request. For example, if the user asks for "a trip to sunny Los Angeles", use "Los Angeles" as the city parameter, not "LA" unless the user specifically used "LA".
+
 Available Tools:
 
-1. search_flights(origin_city=None, dest_city=None, date=None): Retrieves flight information.
-2. calculate_distance(origin=None, destination=None, mode="driving"): Estimates travel distance, time, cost ("driving", "taxi", "walking", "transit").
-3. search_accommodations(city=None): Finds hotels/lodging.
-4. search_restaurants(city=None): Finds dining options.
-5. search_attractions(city=None): Finds tourist attractions.
-6. search_cities(state=None): Lists cities within a state/region.
+1. search_flights(origin_city=None, dest_city=None, date=None)
+- Description: Retrieves flight information between two cities.
+- Parameters:
+- origin_city: Departure city (e.g., "New York")
+- dest_city: Destination city (e.g., "London")
+- date: Travel date in YYYY-MM-DD format (e.g., "2022-10-01")
+- Example: search_flights("New York", "London", "2022-10-01")
+
+2. calculate_distance(origin=None, destination=None, mode="driving")
+- Description: Estimates travel distance, time and cost between two locations.
+- Parameters:
+- origin: Starting city (e.g., "Paris")
+- destination: Target city (e.g., "Lyon")
+- mode: Transportation method - "driving", "taxi", "walking" or "transit"
+- Example: calculate_distance("Paris", "Lyon", mode="driving")
+
+3. search_accommodations(city=None)
+- Description: Finds available hotels and lodging in a city.
+- Parameters:
+- city: City name (e.g., "Rome")
+- Example: search_accommodations("Rome")
+
+4. search_restaurants(city=None)
+- Description: Finds dining options in a city.
+- Parameters:
+- city: City name (e.g., "Tokyo")
+- Example: search_restaurants("Tokyo")
+
+5. search_attractions(city=None)
+- Description: Finds tourist attractions in a city.
+- Parameters:
+- city: City name (e.g., "London")
+- Example: search_attractions("London")
+
+6. search_cities(state=None)
+- Description: Lists cities within a specified state/region.
+- Parameters:
+- state: State/region name (e.g., "California")
+- Example: search_cities("California")
 
 Available Memory Operations:
 
-1. write(key, value): Stores data.
-2. read(key): Retrieves data.
-3. delete(key): Removes data.
-4. list_keys(): Lists stored keys.
-5. list_all(): Summarizes all stored key-value pairs.
-6. reset(): Clears all memory.
+1. write(key, value)
+- Description: Stores data in memory with a specified key
+- Parameters:
+- key: Unique identifier for the data (string)
+- value: Data to be stored (any type)
+- Example: write("user_preferences", {{"theme": "dark", "language": "en"}})
+
+2. read(key)
+- Description: Retrieves data from memory using its key
+- Parameters:
+- key: Identifier of the data to retrieve (string)
+- Returns: The stored value or None if not found
+- Example: read("user_preferences")
+
+3. delete(key)
+- Description: Removes data from memory
+- Parameters:
+- key: Identifier of the data to remove (string)
+- Returns: True if deleted, False if key didn't exist
+- Example: delete("temp_data")
+
+4. list_keys()
+- Description: Lists all keys currently stored in memory
+- Returns: List of all keys (strings)
+- Example: list_keys()
+
+5. list_all()
+- Description: Provides a summary of all key-value pairs in memory
+- Returns: Dictionary with keys and value types/summaries
+- Example: list_all()
+
+6. reset()
+- Description: Completely clears all data from memory
+- Returns: True when complete
+- Example: reset()
 
 User instruction: INSTRUCTION
 
