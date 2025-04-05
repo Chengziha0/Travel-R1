@@ -150,7 +150,7 @@ class LLMGenerationManager:
         num_gpus = self.config.num_gpus
         if num_gpus <= 1:
             print(f"DEBUG:  _generate_with_gpu_padding: 单GPU生成")
-            print(f"DEBUG:  _generate_with_gpu_padding: active_batch: {active_batch.batch['input_ids'].shape}")
+            # print(f"DEBUG:  _generate_with_gpu_padding: active_batch: {active_batch.batch['input_ids'].shape}")
             return self.actor_rollout_wg.generate_sequences(active_batch)
         batch_size = active_batch.batch['input_ids'].shape[0]
         remainder = batch_size % num_gpus

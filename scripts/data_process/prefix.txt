@@ -48,4 +48,6 @@ Available Memory Operations:
 5. list_all(): Summarizes all stored key-value pairs.
 6. reset(): Clears all memory.
 
-User instruction: {question}
+User instruction: INSTRUCTION
+
+Now, begin planning based on the user instruction, generating only one action per turn.

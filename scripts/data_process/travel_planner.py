@@ -25,8 +25,8 @@ import argparse
 
 def make_prefix(dp, template_type):
     question = dp['query']
-    with open('scripts/data_process/prompt.txt', 'r') as f:
-        prefix = f.read()
+    with open('scripts/data_process/prefix.txt', 'r') as f:
+        prefix = f.read().replace(r'INSTRUCTION', question)
     return prefix
 
 
