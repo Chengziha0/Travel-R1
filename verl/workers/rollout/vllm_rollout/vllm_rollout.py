@@ -143,6 +143,8 @@ class vLLMRollout(BaseRollout):
         # rebuild vllm cache engine
         if self.config.free_cache_engine:
             self.inference_engine.init_cache_engine()
+        # breakpoint()
+
 
         idx = prompts.batch['input_ids']  # (bs, prompt_length)
         # print(f"DEBUG: idx shape: {idx.shape}")
@@ -174,6 +176,7 @@ class vLLMRollout(BaseRollout):
             }
 
         # users can customize different sampling_params at different run
+        # 把active batch中的prompt token id直接传入vllm，只是做了padding的操作，所以构造输入模板的过程，应该在函数外部实现
         with self.update_sampling_params(**kwargs):
             output = self.inference_engine.generate(
                 prompts=None,  # because we have already convert it to prompt token id

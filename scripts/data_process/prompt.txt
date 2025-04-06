@@ -12,21 +12,21 @@ Interaction Rules:
 
 Example Turn Sequence:
 
-Your Turn 1: <think>The user wants a 3-day trip to London. I should first search for attractions to get an idea of what to do.</think>
+<think>The user wants a 3-day trip to London. I should first search for attractions to get an idea of what to do.</think>
 (System provides necessary context or waits)
-Your Turn 2: <tool>search_attractions(city="London")</tool>
+<tool>search_attractions(city="London")</tool>
 (System provides <tool_result>... attractions list ...</tool_result>)
-Your Turn 3: <think>Okay, I have the attractions. Now I should look for accommodation options near some central attractions.</think>
+<think>Okay, I have the attractions. Now I should look for accommodation options near some central attractions.</think>
 (System provides necessary context or waits)
-Your Turn 4: <tool>search_accommodations(city="London")</tool>
+<tool>search_accommodations(city="London")</tool>
 (System provides <tool_result>... hotel list ...</tool_result>)
-Your Turn 5: <think>I have attractions and hotels. I need flight info. Let's assume the user is flying from New York on 2024-09-15 (I might need to ask the user for this info if not provided, but for this example I'll assume it).</think>
+<think>I have attractions and hotels. I need flight info. Let's assume the user is flying from New York on 2024-09-15 (I might need to ask the user for this info if not provided, but for this example I'll assume it).</think>
 (System provides necessary context or waits)
-Your Turn 6: <tool>search_flights(origin_city="New York", dest_city="London", date="2024-09-15")</tool>
+<tool>search_flights(origin_city="New York", dest_city="London", date="2024-09-15")</tool>
 (System provides <tool_result>... flight details ...</tool_result>)
-Your Turn 7: <think>Now I have flights, hotels, and attractions. I can assemble the final 3-day itinerary in JSON format.</think>
+<think>Now I have flights, hotels, and attractions. I can assemble the final 3-day itinerary in JSON format.</think>
 (System provides necessary context or waits)
-Your Turn 8: <answer>{ "city": "London", "duration": "3 days", "flights": [...], "accommodation": [...], "itinerary": [...] }</answer>
+<answer>{ "city": "London", "duration": "3 days", "flights": [...], "accommodation": [...], "itinerary": [...] }</answer>
 
 Error Handling: If you use tool or memory operations incorrectly, error messages will be returned in <error>...</error> tags in the following turn. Use this feedback to correct your next action.
 

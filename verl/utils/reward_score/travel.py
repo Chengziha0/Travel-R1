@@ -65,6 +65,8 @@ def compute_score_fn(data, format_score=1.0, tokenizer=None):
     print(f"tool_stats: {tool_stats}")
     print(f"memory_stats: {memory_stats}")
     
+    # if 1 in tool_stats:
+    #     breakpoint()
     for i in range(batch_size):
         data_item = data[i]
         
@@ -73,16 +75,16 @@ def compute_score_fn(data, format_score=1.0, tokenizer=None):
         responses = data_item.batch['responses'].unsqueeze(0)  # 添加批次维度
         attention_mask = data_item.batch['attention_mask'].unsqueeze(0)  # 添加批次维度
         
-        print(f"\n批次 {i} 的数据形状:")
-        print(f"prompts shape: {prompts.shape}")
-        print(f"responses shape: {responses.shape}")
-        print(f"attention_mask shape: {attention_mask.shape}")
+        # print(f"\n批次 {i} 的数据形状:")
+        # print(f"prompts shape: {prompts.shape}")
+        # print(f"responses shape: {responses.shape}")
+        # print(f"attention_mask shape: {attention_mask.shape}")
         
         prompt_length = prompts.size(1)
         valid_prompt_length = int(attention_mask[0, :prompt_length].sum().item())
         
-        print(f"prompt_length: {prompt_length}")
-        print(f"valid_prompt_length: {valid_prompt_length}")
+        # print(f"prompt_length: {prompt_length}")
+        # print(f"valid_prompt_length: {valid_prompt_length}")
         
         # 取出 prompt 中最后 valid_prompt_length 个 token（假设右侧对齐）
         valid_prompt_ids = prompts[:, -valid_prompt_length:]
@@ -102,7 +104,7 @@ def compute_score_fn(data, format_score=1.0, tokenizer=None):
         
         # 如果 tool 与 memory 执行次数都 ≥ 1，则奖励为 format_score + final_answer_reward，否则为 0
         reward_value = 0.0
-        if tool_stats[i] >= 1 and memory_stats[i] >= 1:
+        if tool_stats[i] >= 1 or memory_stats[i] >= 1:
             reward_value = format_score + final_answer_reward
         all_scores.append(reward_value)
         

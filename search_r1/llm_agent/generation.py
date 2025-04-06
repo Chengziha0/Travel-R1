@@ -205,6 +205,7 @@ class LLMGenerationManager:
         rollings = gen_batch
 
         for step in range(self.config.max_turns):
+            # print(f"DEBUG: step: {step} 生成的回应:", rollings.batch['responses'])
             if not active_mask.sum():
                 break
             rollings.batch = self.tensor_fn.cut_to_effective_len(
@@ -214,9 +215,16 @@ class LLMGenerationManager:
             rollings_active = DataProto.from_dict({
                 k: v[active_mask] for k, v in rollings.batch.items()
             })
+            
             # Ensure input_ids is integer type
             if rollings_active.batch['input_ids'].dtype != torch.int64:
                 rollings_active.batch['input_ids'] = rollings_active.batch['input_ids'].to(torch.int64)
+            
+            # 打印输入给LLM的内容
+            print(f"DEBUG: run_llm_loop: 步骤 {step} - 输入给LLM的内容:")
+            sample_input = self.tokenizer.decode(rollings_active.batch['input_ids'][0], skip_special_tokens=True)
+            print(f"DEBUG: run_llm_loop: 样本输入(首条): {sample_input}...")
+            
             gen_output = self._generate_with_gpu_padding(rollings_active)
             meta_info = gen_output.meta_info    
             # breakpoint()        
@@ -324,20 +332,20 @@ class LLMGenerationManager:
                 result = self._execute_tool(content)
                 # Check if result contains error message
                 if result.startswith("Error:"):
-                    next_obs.append(f"\n<error>{result}</error>\n")
+                    next_obs.append(f"\n\n<error>{result}</error>\n\n")
                     print("DEBUG:  execute_predictions: 工具调用错误:", result)
                 else:
-                    next_obs.append(f"\n<tool_result>{result}</tool_result>\n")
+                    next_obs.append(f"\n\n<tool_result>{result}</tool_result>\n\n")
                     print("DEBUG:  execute_predictions: 工具调用结果:", result)
                 dones.append(False)
             elif action == 'memory' and not final_step:
                 result = self._process_memory(content)
                 # Check if result contains error message
                 if result.startswith("Error:"):
-                    next_obs.append(f"\n<error>{result}</error>\n")
+                    next_obs.append(f"\n\n<error>{result}</error>\n\n")
                     print("DEBUG:  execute_predictions: 记忆操作错误:", result)
                 else:
-                    next_obs.append(f"\n<memory_result>{result}</memory_result>\n")
+                    next_obs.append(f"\n\n<memory_result>{result}</memory_result>\n\n")
                     print("DEBUG:  execute_predictions: 记忆操作结果:", result)
                 dones.append(False)
             elif action == 'answer' or final_step:

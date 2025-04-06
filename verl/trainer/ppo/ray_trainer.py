@@ -471,7 +471,9 @@ class RayPPOTrainer(object):
             tokenizer=self.tokenizer,
             actor_rollout_wg=self.actor_rollout_wg,
             config=gen_config,
-            is_validation = True,
+            is_validation=True,
+            logger=self.logger
+            
         )
 
         for batch_dict in self.val_dataloader:
