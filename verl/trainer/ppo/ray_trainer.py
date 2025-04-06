@@ -673,6 +673,7 @@ class RayPPOTrainer(object):
 
         # start training loop
         for epoch in range(self.config.trainer.total_epochs):
+            breakpoint()
             for batch_dict in self.train_dataloader:
                 print(f'epoch {epoch}, step {self.global_steps}')
                 metrics = {}
@@ -697,7 +698,7 @@ class RayPPOTrainer(object):
                     with _timer('gen', timing_raw):
                         generation_manager.timing_raw = timing_raw
                         # print(f"DEBUG: gen_batch: {gen_batch}")
-                        
+                        breakpoint()
                         final_gen_batch_output = generation_manager.run_llm_loop(
                             gen_batch=gen_batch,
                             initial_input_ids=first_input_ids,

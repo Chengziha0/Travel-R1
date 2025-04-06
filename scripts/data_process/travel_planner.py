@@ -62,10 +62,16 @@ if __name__ == '__main__':
             # 创建全新的返回数据，不保留原始数据
             return {
                 "data_source": data_source,
-                "prompt": [{
-                    "role": "user",
-                    "content": question,
-                }],
+                "prompt": [
+                    {
+                        "role": "system",
+                        "content": "You are a travel planner. You will be given a travel plan and you need to answer the question based on the plan."
+                    },
+                    {
+                        "role": "user",
+                        "content": question,
+                    }
+                    ],
                 "ability": "travel-planning",
                 "reward_model": {
                     "style": "rule",

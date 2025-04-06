@@ -365,6 +365,8 @@ class LLMGenerationManager:
                 next_obs.append('\n<error>My previous action is invalid. Let me try again.</error>\n')
                 print(f"DEBUG:  execute_predictions: 无效动作: {action}-{content}")
                 dones.append(False)
+        # for i in range(len(next_obs)):
+        #     next_obs[i] = "*" * 100
         return next_obs, dones
 
     def _execute_tool(self, tool_content: str) -> str:
@@ -490,6 +492,7 @@ class LLMGenerationManager:
         return value_str
 
     def _compose_final_output(self, left_side: Dict, right_side: Dict, meta_info: Dict) -> DataProto:
+        breakpoint()
         final_output = right_side.copy()
         final_output['prompts'] = left_side['input_ids']
         final_output['input_ids'] = torch.cat([left_side['input_ids'], right_side['responses']], dim=1)

@@ -72,6 +72,7 @@ class RLHFDataset(Dataset):
                  truncation='error'):
         if not isinstance(parquet_files, (List, ListConfig)):
             parquet_files = [parquet_files]
+        breakpoint()
 
         self.parquet_files = parquet_files
         self.cache_dir = os.path.expanduser(cache_dir)
