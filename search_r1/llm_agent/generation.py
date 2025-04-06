@@ -222,8 +222,8 @@ class LLMGenerationManager:
             
             # 打印输入给LLM的内容
             print(f"DEBUG: run_llm_loop: 步骤 {step} - 输入给LLM的内容:")
-            sample_input = self.tokenizer.decode(rollings_active.batch['input_ids'][0], skip_special_tokens=True)
-            print(f"DEBUG: run_llm_loop: 样本输入(首条): {sample_input}...")
+            sample_input = self.tokenizer.decode(rollings_active.batch['input_ids'][0], skip_special_tokens=False)
+            print(f"DEBUG: run_llm_loop: 样本输入(首条): {sample_input}")
             
             gen_output = self._generate_with_gpu_padding(rollings_active)
             meta_info = gen_output.meta_info    
